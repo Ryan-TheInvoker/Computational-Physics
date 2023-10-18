@@ -162,6 +162,66 @@ void run_simulation(int L, double beta, FILE *file,  int equilibration,int sweep
     free(s);
 }
 
+// ... [Your previous code and functions here] ...
+
+double distance(int x1, int y1, int x2, int y2, int L) {
+    // Compute the periodic boundary corrected distance between two points on the lattice
+    double dx = fabs(x1 - x2);
+    double dy = fabs(y1 - y2);
+    // Take into account periodic boundary conditions
+    dx = fmin(dx, L - dx);
+    dy = fmin(dy, L - dy);
+    return sqrt(dx*dx + dy*dy);
+}
+
+void compute_two_point_function(int **s, int L, double *G, double *m) {
+    // Initialize accumulators
+    double m_acc = 0.0;
+    int pairs = 0;  // Number of pairs for each r
+
+    // Loop over all pairs of spins in the lattice
+    for (int x1 = 0; x1 < L; x1++) {
+        for (int y1 = 0; y1 < L; y1++) {
+            for (int x2 = 0; x2 < L; x2++) {
+                for (int y2 = 0; y2 < L; y2++) {
+                    double r = distance(x1, y1, x2, y2, L);
+                    int r_int = (int) round(r);
+                    G[r_int] += s[x1][y1] * s[x2][y2];
+                    pairs++;
+                }
+            }
+            m_acc += s[x1][y1];
+        }
+    }
+    
+    // Normalize the results
+    for (int i = 0; i < L; i++) {
+        G[i] /= pairs;
+    }   
+    *m = m_acc / (L * L);
+}
+
+void compute_and_save_G(int **s, int L, double beta, FILE *file) {
+    // Compute G(r) and m
+    double *G = malloc(L * sizeof(double));
+    double m;
+    compute_two_point_function(s, L, G, &m);
+
+    // Compute g(r) = G(r) - m^2 and save to file
+    for (int r = 0; r < L; r++) {
+        double g = G[r] - m * m;
+        fprintf(file, "%d,%.2f,%d,%.2f,%.2f\n", L, beta, r, G[r], g);
+    }
+
+    free(G);
+}
+
+
+
+
+
+
+
 int main() {
     srand48(time(NULL));
 
@@ -175,15 +235,15 @@ int main() {
 
     start = clock();
     //PART_1
-    run_simulation(4, 0.2, file,0,100000,NULL);
-    run_simulation(4, 0.4, file,0,100000,NULL);
-    run_simulation(4, 0.6, file,0,100000,NULL);
-    run_simulation(10, 0.2, file,0,100000,NULL);
-    run_simulation(10, 0.4, file,0,100000,NULL);
-    run_simulation(10, 0.6, file,0,100000,NULL);
-    run_simulation(50, 0.2, file,0,100000,NULL);
-    run_simulation(50, 0.4, file,0,100000,NULL);
-    run_simulation(50, 0.6, file,0,100000,NULL);
+    run_simulation(4, 0.2, file,0,10000,NULL);
+    run_simulation(4, 0.4, file,0,10000,NULL);
+    run_simulation(4, 0.6, file,0,10000,NULL);
+    run_simulation(10, 0.2, file,0,10000,NULL);
+    run_simulation(10, 0.4, file,0,10000,NULL);
+    run_simulation(10, 0.6, file,0,10000,NULL);
+    run_simulation(50, 0.2, file,0,10000,NULL);
+    run_simulation(50, 0.4, file,0,10000,NULL);
+    run_simulation(50, 0.6, file,0,10000,NULL);
 
     fclose(file);
 
@@ -197,17 +257,19 @@ int main() {
 
     start = clock();
 
-    //FILE *file2 = fopen("data_part2.csv", "w");
-    //fprintf(file2, "L,Beta,M,|M|\n");
+    FILE *file2 = fopen("data_part2.csv", "w");
+    fprintf(file2, "L,Beta,M,|M|\n");
     
     FILE *file2_avg = fopen("averages_part2.csv","w");
-    fprintf(file2_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2> \n");
+    fprintf(file2_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2>\n");
+    
     int L = 200;
+    
     for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
         run_simulation(L,beta, NULL,1,10000,file2_avg);
     }
 
-    for(double beta = 0.4; beta <=0.6; beta+= 0.05){
+    for(double beta = 0.4; beta <=0.6; beta+= 0.02){
 
         run_simulation(L,beta,NULL,2,50000,file2_avg);
 
@@ -220,7 +282,7 @@ int main() {
     
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("Time taken Part 1: %f seconds\n", cpu_time_used);
+    printf("Time taken Part 2: %f seconds\n", cpu_time_used);
 
     //fclose(file1);
     fclose(file2_avg);
@@ -232,7 +294,7 @@ int main() {
     //FILE *file3 = fopen("data_part3.csv", "w");
     //fprintf(file3, "L,Beta,E_avg,E2_avg,M_avg,M2_avg\n");
     FILE *file3_avg = fopen("averages_part3.csv","w");
-    fprintf(file3_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2> \n");
+    fprintf(file3_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2>\n");
     L = 200;
     for (double beta = 0.1; beta <= 1.0; beta += 0.05) {
         run_simulation(L, beta, NULL,1,10000,file3_avg);
@@ -245,7 +307,7 @@ int main() {
 
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("Time taken Part 1: %f seconds\n", cpu_time_used);
+    printf("Time taken Part 3: %f seconds\n", cpu_time_used);
 
     //fclose(file2);
     fclose(file3_avg);
