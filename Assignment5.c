@@ -29,7 +29,7 @@ double compute_H(int **s, int L, double h) {
 }
 
 
-void  run_simulation(int L, double beta, FILE *file,  int equilibration,int sweeps,FILE *avg_file,int partIV) {
+void  run_simulation(int L, double beta, FILE *file,  int equilibration,int sweeps,FILE *avg_file,FILE *partIV) {
 
     //accumulators for averages
     double E_acc = 0.0, E2_acc = 0.0;
@@ -133,13 +133,13 @@ void  run_simulation(int L, double beta, FILE *file,  int equilibration,int swee
 
         }
 
-        if(partIV) {
-            // double Gr_values[L/2 + 1] = {0};
-            // compute_Gr(s, L, Gr_values);
-            for (int r = 0; r <= L/2; r++) {
-           // fprintf(file4, "%d,%.2f,%d,%.2f\n", L, beta, r, Gr_values[r]);
-    }
-}  
+    //     if(partIV) {
+    //         // double Gr_values[L/2 + 1] = {0};
+    //         // compute_Gr(s, L, Gr_values);
+    //         for (int r = 0; r <= L/2; r++) {
+    //        // fprintf(file4, "%d,%.2f,%d,%.2f\n", L, beta, r, Gr_values[r]);
+    // }
+//}  
     }
     
     
@@ -159,6 +159,32 @@ void  run_simulation(int L, double beta, FILE *file,  int equilibration,int swee
     
     
     }
+    if(partIV!=NULL){
+    // Compute G(r) and m
+        double Gr_values[L/2 + 1];
+        for (int r = 0; r <= L/2; r++) {
+            Gr_values[r] = 0.0;
+        }
+
+        compute_Gr(s, L, Gr_values);
+
+        double m = 0.0;
+        for (int i = 0; i < L; i++) {
+            for (int j = 0; j < L; j++) {
+                m += s[i][j];
+            }
+        }
+        m /= (L * L);
+
+    // Compute g(r) = G(r) - m^2 and save to file
+        for (int r = 0; r <= L/2; r++) {
+            double g = Gr_values[r] - m * m;
+            fprintf(partIV, "%d,%.2f,%d,%.2f,%.2f\n", L, beta, r, Gr_values[r], g);
+        }
+
+    }
+
+
     
     for (int i = 0; i < L; i++) {
         free(s[i]);
@@ -229,21 +255,31 @@ double distance(int x1, int y1, int x2, int y2, int L){
 
 
 void compute_Gr(int** s, int L, double* Gr_values) {
+    
+    int num_pairs[L/2 + 1];
+    for (int r = 0; r <= L/2; r++) {
+        num_pairs[r] = 0;
+    }  // Store number of pairs at each distance r
+
     for (int i = 0; i < L; i++) {
         for (int j = 0; j < L; j++) {
-            for (int dx = -L/2; dx <= L/2; dx++) {
-                for (int dy = -L/2; dy <= L/2; dy++) {
-                    int r = distance(i, j, i + dx, j + dy, L);
-                    int x_new = (i + dx + L) % L;  // Handle periodic boundary conditions
-                    int y_new = (j + dy + L) % L;  // Handle periodic boundary conditions
-                //    Gr_values[r] += s[i*L + j] * s[x_new*L + y_new];
+            for (int x = 0; x < L; x++) {
+                for (int y = 0; y < L; y++) {
+                    int r = (int)round(distance(i, j, x, y, L));
+                    if (r <= L/2) {
+                        Gr_values[r] += s[i][j] * s[x][y];
+                        num_pairs[r]++;
+                    }
                 }
             }
         }
     }
 
+    // Normalize G(r) values
     for (int r = 0; r <= L/2; r++) {
-        Gr_values[r] /= (L * L);  // Normalize
+        if (num_pairs[r] != 0) {
+            Gr_values[r] /= num_pairs[r];
+        }
     }
 }
 
@@ -264,15 +300,18 @@ int main() {
 
     start = clock();
     //PART_1
-    run_simulation(4, 0.2, file,0,10000,NULL,0);
-    run_simulation(4, 0.4, file,0,10000,NULL,0);
-    run_simulation(4, 0.6, file,0,10000,NULL,0);
-    run_simulation(10, 0.2, file,0,10000,NULL,0);
-    run_simulation(10, 0.4, file,0,10000,NULL,0);
-    run_simulation(10, 0.6, file,0,10000,NULL,0);
-    run_simulation(50, 0.2, file,0,10000,NULL,0);
-    run_simulation(50, 0.4, file,0,10000,NULL,0);
-    run_simulation(50, 0.6, file,0,10000,NULL,0);
+    // run_simulation(4, 0.2, file,0,10000,NULL,NULL);
+    // run_simulation(4, 0.4, file,0,10000,NULL,NULL);
+    // run_simulation(4, 0.6, file,0,10000,NULL,NULL);
+    // run_simulation(10, 0.2, file,0,10000,NULL,NULL);
+    // run_simulation(10, 0.4, file,0,10000,NULL,NULL);
+    // run_simulation(10, 0.6, file,0,10000,NULL,NULL);
+    // run_simulation(50, 0.2, file,0,10000,NULL,NULL);
+    // run_simulation(50, 0.4, file,0,10000,NULL,NULL);
+    // run_simulation(50, 0.6, file,0,10000,NULL,NULL);
+    run_simulation(200, 0.2, file,0,10000,NULL,NULL);
+    run_simulation(200, 0.4, file,0,10000,NULL,NULL);
+    run_simulation(200, 0.6, file,0,10000,NULL,NULL);
 
     fclose(file);
 
@@ -284,98 +323,102 @@ int main() {
 
     //PART_2 
 
-    start = clock();
+    // start = clock();
 
-    FILE *file2 = fopen("data_part2.csv", "w");
-    fprintf(file2, "L,Beta,M,|M|\n");
+    // FILE *file2 = fopen("data_part2.csv", "w");
+    // fprintf(file2, "L,Beta,M,|M|\n");
     
-    FILE *file2_avg = fopen("averages_part2.csv","w");
-    fprintf(file2_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2>\n");
+    // FILE *file2_avg = fopen("averages_part2.csv","w");
+    // fprintf(file2_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2>\n");
     
-    int L = 200;
+    // int L = 200;
     
-    for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
-        run_simulation(L,beta, NULL,1,10000,file2_avg,0);
-    }
+    // for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
+    //     run_simulation(L,beta, NULL,1,10000,file2_avg,NULL);
+    // }
 
-    for(double beta = 0.4; beta <=0.6; beta+= 0.01){
+    // for(double beta = 0.4; beta <=0.6; beta+= 0.01){
 
-        run_simulation(L,beta,NULL,2,50000,file2_avg,0);
+    //     run_simulation(L,beta,NULL,2,50000,file2_avg,NULL);
 
-    }
+    // }
 
-    for (double beta = 0.6; beta <= 1; beta += 0.05) {
-        run_simulation(L,beta, NULL,1,10000,file2_avg,0);
-    }
+    // for (double beta = 0.6; beta <= 1; beta += 0.05) {
+    //     run_simulation(L,beta, NULL,1,10000,file2_avg,NULL);
+    // }
 
     
-    end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("Time taken Part 2: %f seconds\n", cpu_time_used);
+    // end = clock();
+    // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    // printf("Time taken Part 2: %f seconds\n", cpu_time_used);
 
-    //fclose(file1);
-    fclose(file2_avg);
+    // //fclose(file1);
+    // fclose(file2_avg);
 
     //PART 3
 
     // start = clock();
 
-    //FILE *file3 = fopen("data_part3.csv", "w");
-    //fprintf(file3, "L,Beta,E_avg,E2_avg,M_avg,M2_avg\n");
+    // FILE *file3 = fopen("data_part3.csv", "w");
+    // fprintf(file3, "L,Beta,E_avg,E2_avg,M_avg,M2_avg\n");
     // FILE *file3_avg = fopen("averages_part3.csv","w");
     // fprintf(file3_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2>\n");
     // L = 200;
     // for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
-    //     run_simulation(L, beta, NULL,2,10000,file3_avg,0);
+    //     run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
     // }
     // for (double beta = 0.4; beta <= 0.45; beta += 0.01) {
-    //     run_simulation(L, beta, NULL,2,10000,file3_avg,0);
+    //     run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
     // }
     // for (double beta = 0.45; beta <= 1; beta += 0.05) {
-    //     run_simulation(L, beta, NULL,2,10000,file3_avg,0);
+    //     run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
     // }   
     
     // L = 300;
-    // for (double beta = 0.1; beta <= 1.0; beta += 0.05) {
-    //     run_simulation(L, beta, NULL,2,12000,file3_avg,0);
+    // for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
+    //     run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
     // }
+    // for (double beta = 0.4; beta <= 0.45; beta += 0.01) {
+    //     run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
+    // }
+    // for (double beta = 0.45; beta <= 1; beta += 0.05) {
+    //     run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
+    // }   
 
     // end = clock();
     // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     // printf("Time taken Part 3: %f seconds\n", cpu_time_used);
 
-    //fclose(file2);
+    // fclose(file2);
     // fclose(file3_avg);
 
 
 
     //PART 4
 
-//     start = clock();
+    start = clock();
 
-//     FILE *file4 = fopen("data_part4.csv", "w");
-//     fprintf(file4, "L,Beta,r,G(r),g(r)\n");
+    FILE *file4 = fopen("data_part4.csv", "w");
+    fprintf(file4, "L,Beta,r,G(r),g(r)\n");
 
-//     L = 200;  // Sample L value
+    int L = 200;  // Sample L value
 
-//     double Gr_values[L/2 + 1] = {0}; 
+    double Gr_values[L/2 + 1];
+    for (int r = 0; r <= L/2; r++) {
+        Gr_values[r] = 0.0;
+    } 
 
-//     for (double beta = 0.1; beta <= 1.0; beta += 0.05) {
+    for (double beta = 0.1; beta <= 1.0; beta += 0.1) {
 
-//         run_simulation(L, beta, NULL,2,5000,NULL,1);
+        run_simulation(L, beta, NULL,2,5000,NULL,file4);
         
-//             for (int i = 0; i < L; i++) {
-//                 free(s_final[i]);
-//     }
+    }
 
-//         free(s_final);
-// }
+    fclose(file4);
 
-//     fclose(file4);
-
-//     end = clock();
-//     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-//     printf("Time taken Part 4: %f seconds\n", cpu_time_used);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("Time taken Part 4: %f seconds\n", cpu_time_used);
 
     return 0;
 }
