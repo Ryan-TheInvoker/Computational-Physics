@@ -27,7 +27,7 @@ double compute_H(int **s, int L, double h) {
 }
 
 
-void run_simulation(int L, double beta, FILE *file,  int equilibration,int sweeps,FILE *avg_file) {
+int ** run_simulation(int L, double beta, FILE *file,  int equilibration,int sweeps,FILE *avg_file) {
 
     //accumulators for averages
     double E_acc = 0.0, E2_acc = 0.0;
@@ -155,12 +155,18 @@ void run_simulation(int L, double beta, FILE *file,  int equilibration,int sweep
     
     
     }
+    return s;
+    // for (int i = 0; i < L; i++) {
+    //     free(s[i]);
+    // }
 
-    for (int i = 0; i < L; i++) {
-        free(s[i]);
-    }
-    free(s);
+    // free(s);
 }
+
+
+
+
+
 
 // ... [Your previous code and functions here] ...
 
@@ -255,55 +261,61 @@ int main() {
 
     //PART_2 
 
-    start = clock();
+    // start = clock();
 
-    FILE *file2 = fopen("data_part2.csv", "w");
-    fprintf(file2, "L,Beta,M,|M|\n");
+    // FILE *file2 = fopen("data_part2.csv", "w");
+    // fprintf(file2, "L,Beta,M,|M|\n");
     
-    FILE *file2_avg = fopen("averages_part2.csv","w");
-    fprintf(file2_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2>\n");
+    // FILE *file2_avg = fopen("averages_part2.csv","w");
+    // fprintf(file2_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2>\n");
     
-    int L = 200;
+    // int L = 200;
     
-    for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
-        run_simulation(L,beta, NULL,1,10000,file2_avg);
-    }
+    // for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
+    //     run_simulation(L,beta, NULL,1,10000,file2_avg);
+    // }
 
-    for(double beta = 0.4; beta <=0.6; beta+= 0.02){
+    // for(double beta = 0.4; beta <=0.6; beta+= 0.02){
 
-        run_simulation(L,beta,NULL,2,50000,file2_avg);
+    //     run_simulation(L,beta,NULL,2,50000,file2_avg);
 
-    }
+    // }
 
-    for (double beta = 0.6; beta <= 1; beta += 0.05) {
-        run_simulation(L,beta, NULL,1,10000,file2_avg);
-    }
+    // for (double beta = 0.6; beta <= 1; beta += 0.05) {
+    //     run_simulation(L,beta, NULL,1,10000,file2_avg);
+    // }
 
     
-    end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("Time taken Part 2: %f seconds\n", cpu_time_used);
+    // end = clock();
+    // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    // printf("Time taken Part 2: %f seconds\n", cpu_time_used);
 
-    //fclose(file1);
-    fclose(file2_avg);
+    // //fclose(file1);
+    // fclose(file2_avg);
 
     //PART 3
 
-    start = clock();
+    // start = clock();
 
     //FILE *file3 = fopen("data_part3.csv", "w");
     //fprintf(file3, "L,Beta,E_avg,E2_avg,M_avg,M2_avg\n");
     FILE *file3_avg = fopen("averages_part3.csv","w");
     fprintf(file3_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2>\n");
-    L = 200;
-    for (double beta = 0.1; beta <= 1.0; beta += 0.05) {
-        run_simulation(L, beta, NULL,1,10000,file3_avg);
+    int L = 200;
+    for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
+        run_simulation(L, beta, NULL,2,5000,file3_avg);
     }
-
-    L = 300;
-    for (double beta = 0.1; beta <= 1.0; beta += 0.05) {
-        run_simulation(L, beta, NULL,1,10000,file3_avg);
+    for (double beta = 0.4; beta <= 0.45; beta += 0.01) {
+        run_simulation(L, beta, NULL,2,5000,file3_avg);
     }
+    for (double beta = 0.45; beta <= 1; beta += 0.05) {
+        run_simulation(L, beta, NULL,2,5000,file3_avg);
+    }
+    
+    // L = 300;
+    // for (double beta = 0.1; beta <= 1.0; beta += 0.05) {
+    //     run_simulation(L, beta, NULL,2,12000,file3_avg);
+    // }
 
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -311,6 +323,32 @@ int main() {
 
     //fclose(file2);
     fclose(file3_avg);
+
+
+
+    //PART 4
+
+    start = clock();
+
+    FILE *file4 = fopen("data_part4.csv", "w");
+    fprintf(file4, "L,Beta,r,G(r),g(r)\n");
+
+    L = 200;  // Sample L value
+
+    for (double beta = 0.1; beta <= 1.0; beta += 0.05) {
+        int** s_final = run_simulation(L, beta, NULL,2,5000,NULL);  // This function should run the simulation and return the final spin configuration
+        compute_and_save_G(s_final, L, beta, file4);  // Then, compute the two-point function using the final configuration
+    for (int i = 0; i < L; i++) {
+        free(s_final[i]);
+    }
+    free(s_final);
+}
+
+    fclose(file4);
+
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("Time taken Part 4: %f seconds\n", cpu_time_used);
 
     return 0;
 }
