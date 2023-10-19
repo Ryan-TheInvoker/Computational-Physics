@@ -300,18 +300,16 @@ int main() {
 
     start = clock();
     //PART_1
-    // run_simulation(4, 0.2, file,0,10000,NULL,NULL);
-    // run_simulation(4, 0.4, file,0,10000,NULL,NULL);
-    // run_simulation(4, 0.6, file,0,10000,NULL,NULL);
-    // run_simulation(10, 0.2, file,0,10000,NULL,NULL);
-    // run_simulation(10, 0.4, file,0,10000,NULL,NULL);
-    // run_simulation(10, 0.6, file,0,10000,NULL,NULL);
-    // run_simulation(50, 0.2, file,0,10000,NULL,NULL);
-    // run_simulation(50, 0.4, file,0,10000,NULL,NULL);
-    // run_simulation(50, 0.6, file,0,10000,NULL,NULL);
-    run_simulation(200, 0.2, file,0,10000,NULL,NULL);
-    run_simulation(200, 0.4, file,0,10000,NULL,NULL);
-    run_simulation(200, 0.6, file,0,10000,NULL,NULL);
+    run_simulation(4, 0.2, file,0,10000,NULL,NULL);
+    run_simulation(4, 0.4, file,0,10000,NULL,NULL);
+    run_simulation(4, 0.6, file,0,10000,NULL,NULL);
+    run_simulation(10, 0.2, file,0,10000,NULL,NULL);
+    run_simulation(10, 0.4, file,0,10000,NULL,NULL);
+    run_simulation(10, 0.6, file,0,10000,NULL,NULL);
+    run_simulation(50, 0.2, file,0,10000,NULL,NULL);
+    run_simulation(50, 0.4, file,0,10000,NULL,NULL);
+    run_simulation(50, 0.6, file,0,10000,NULL,NULL);
+    
 
     fclose(file);
 
@@ -323,74 +321,74 @@ int main() {
 
     //PART_2 
 
-    // start = clock();
+    start = clock();
 
-    // FILE *file2 = fopen("data_part2.csv", "w");
-    // fprintf(file2, "L,Beta,M,|M|\n");
+    FILE *file2 = fopen("data_part2.csv", "w");
+    fprintf(file2, "L,Beta,M,|M|\n");
     
-    // FILE *file2_avg = fopen("averages_part2.csv","w");
-    // fprintf(file2_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2>\n");
+    FILE *file2_avg = fopen("averages_part2.csv","w");
+    fprintf(file2_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2>\n");
     
-    // int L = 200;
+    int L = 200;
     
-    // for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
-    //     run_simulation(L,beta, NULL,1,10000,file2_avg,NULL);
-    // }
+    for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
+        run_simulation(L,beta, NULL,1,10000,file2_avg,NULL);
+    }
 
-    // for(double beta = 0.4; beta <=0.6; beta+= 0.01){
+    for(double beta = 0.4; beta <=0.6; beta+= 0.01){
 
-    //     run_simulation(L,beta,NULL,2,50000,file2_avg,NULL);
+        run_simulation(L,beta,NULL,2,50000,file2_avg,NULL);
 
-    // }
+    }
 
-    // for (double beta = 0.6; beta <= 1; beta += 0.05) {
-    //     run_simulation(L,beta, NULL,1,10000,file2_avg,NULL);
-    // }
+    for (double beta = 0.6; beta <= 1; beta += 0.05) {
+        run_simulation(L,beta, NULL,1,10000,file2_avg,NULL);
+    }
 
     
-    // end = clock();
-    // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    // printf("Time taken Part 2: %f seconds\n", cpu_time_used);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("Time taken Part 2: %f seconds\n", cpu_time_used);
 
-    // //fclose(file1);
-    // fclose(file2_avg);
+    //fclose(file1);
+    fclose(file2_avg);
 
     //PART 3
 
-    // start = clock();
+    start = clock();
 
-    // FILE *file3 = fopen("data_part3.csv", "w");
-    // fprintf(file3, "L,Beta,E_avg,E2_avg,M_avg,M2_avg\n");
-    // FILE *file3_avg = fopen("averages_part3.csv","w");
-    // fprintf(file3_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2>\n");
-    // L = 200;
-    // for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
-    //     run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
-    // }
-    // for (double beta = 0.4; beta <= 0.45; beta += 0.01) {
-    //     run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
-    // }
-    // for (double beta = 0.45; beta <= 1; beta += 0.05) {
-    //     run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
-    // }   
+    FILE *file3 = fopen("data_part3.csv", "w");
+    fprintf(file3, "L,Beta,E_avg,E2_avg,M_avg,M2_avg\n");
+    FILE *file3_avg = fopen("averages_part3.csv","w");
+    fprintf(file3_avg, "L,Beta,<E>,<E2>,<M>,<|M|>,<M2>\n");
+    L = 200;
+    for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
+        run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
+    }
+    for (double beta = 0.4; beta <= 0.45; beta += 0.01) {
+        run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
+    }
+    for (double beta = 0.45; beta <= 1; beta += 0.05) {
+        run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
+    }   
     
-    // L = 300;
-    // for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
-    //     run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
-    // }
-    // for (double beta = 0.4; beta <= 0.45; beta += 0.01) {
-    //     run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
-    // }
-    // for (double beta = 0.45; beta <= 1; beta += 0.05) {
-    //     run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
-    // }   
+    L = 300;
+    for (double beta = 0.1; beta <= 0.4; beta += 0.05) {
+        run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
+    }
+    for (double beta = 0.4; beta <= 0.45; beta += 0.01) {
+        run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
+    }
+    for (double beta = 0.45; beta <= 1; beta += 0.05) {
+        run_simulation(L, beta, NULL,2,10000,file3_avg,NULL);
+    }   
 
-    // end = clock();
-    // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    // printf("Time taken Part 3: %f seconds\n", cpu_time_used);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("Time taken Part 3: %f seconds\n", cpu_time_used);
 
-    // fclose(file2);
-    // fclose(file3_avg);
+    fclose(file2);
+    fclose(file3_avg);
 
 
 
@@ -401,16 +399,16 @@ int main() {
     FILE *file4 = fopen("data_part4.csv", "w");
     fprintf(file4, "L,Beta,r,G(r),g(r)\n");
 
-    int L = 200;  // Sample L value
+    L = 200;  // Sample L value
 
     double Gr_values[L/2 + 1];
     for (int r = 0; r <= L/2; r++) {
         Gr_values[r] = 0.0;
     } 
 
-    for (double beta = 0.1; beta <= 1.0; beta += 0.1) {
+    for (double beta = 0.1; beta <= 0.5; beta += 0.05) {
 
-        run_simulation(L, beta, NULL,2,5000,NULL,file4);
+        run_simulation(L, beta, NULL,2,15000,NULL,file4);
         
     }
 
